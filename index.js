@@ -53,12 +53,39 @@ export default function HomePage() {
     setATM(atmContract);
   };
 
-  const getBalance = async () => {
+
+  const checkBalance = async () => {
     if (atm) {
-      const balance = await atm.getBalance();
-      setBalance(balance.toNumber());
+      try {
+        const balance = await atm.getBalance();
+        const formattedBalance = ethers.utils.formatEther(balance); // Convert from wei to ETH
+        setBalance(formattedBalance); // Update state with the formatted balance (optional for React)
+        alert(`Your balance is: ${formattedBalance} ETH`);
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+        alert("Failed to retrieve balance. Please try again later.");
+      }
+    } else {
+      alert("No ATM contract connected. Please connect before checking balance.");
     }
   };
+  
+  async function getBalance() {
+    if (atm) {
+      try {
+        const balance = await atm.getBalance(); // Assuming atm.getBalance exists
+        const formattedBalance = ethers.utils.formatEther(balance);
+        // You can use the formattedBalance here (e.g., display it to the user)
+        return formattedBalance; // Optionally return the balance
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+        // Handle errors appropriately (e.g., display an error message)
+      }
+    } else {
+      console.error("ATM contract not connected");
+      // Handle the case where atm is not connected
+    }
+  }
 
   const deposit = async (amount) => {
     if (atm) {
@@ -77,6 +104,38 @@ export default function HomePage() {
       updateTransactionHistory("Withdraw", -amount);
     }
   };
+
+  const viewAccountInfo = async () => {
+    if (atm) {
+      try {
+        const signerAddress = await atm.signer.getAddress();
+        alert(`Your Ethereum Address: ${signerAddress}`);
+      } catch (error) {
+        console.error("Error fetching account info:", error);
+        alert("Failed to retrieve account information. Please try again later.");
+      }
+    }
+  };
+
+  const disconnectWallet = async () => {
+    if (ethWallet) {
+      try {
+        // Assuming you're using MetaMask, this approach should work
+        await ethWallet.request({ method: "eth_requestAccounts", params: [] }); // Request accounts with an empty array to disconnect
+        setEthWallet(undefined);
+        setAccount(undefined);
+        setBalance(undefined);
+        setTransactionHistory([]); // Clear transaction history
+        alert("Disconnected from wallet successfully!");
+      } catch (error) {
+        console.error("Error disconnecting wallet:", error);
+        alert("Failed to disconnect wallet. Please try again later.");
+      }
+    } else {
+      alert("No wallet connected to disconnect.");
+    }
+  };
+  
 
   const updateTransactionHistory = (action, amount) => {
     const newTransaction = { action, amount, timestamp: Date.now() };
@@ -112,14 +171,16 @@ export default function HomePage() {
       );
     }
 
-    if (balance === undefined) {
+    if (checkBalance === undefined) {
       getBalance();
     }
 
     return (
       <div>
-        <p>Account: {account}</p>
-        <p>Account's Balance: {balance}</p>
+        <button onClick={viewAccountInfo}>View Account Info</button>
+        <button onClick={checkBalance}>Refresh Balance</button> 
+        <button onClick={disconnectWallet}>Disconnect Wallet</button>
+        <p> </p>
         <input type="number" id="depositAmount" placeholder="Amount to Deposit" />
         <button onClick={() => deposit(document.getElementById("depositAmount").value)}>Deposit</button>
         <input type="number" id="withdrawAmount" placeholder="Amount to Withdraw" />
