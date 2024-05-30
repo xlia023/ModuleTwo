@@ -86,7 +86,7 @@ export default function HomePage() {
   const renderTransactionHistory = () => {
     return (
       <div>
-        <h3>Transaction History</h3>
+        <h3>History of Transaction</h3>
         <ul>
           {transactionHistory.map((transaction, index) => (
             <li key={index}>
@@ -136,7 +136,7 @@ export default function HomePage() {
   return (
     <main className="container">
       <header>
-        <h1>w31c0me to da M37@cR4ft3r£!!</h1>
+        <h1>WELCOME TO THE METACRAFTERS!!</h1>
       </header>
       {initUser()}
       <style jsx>{`
